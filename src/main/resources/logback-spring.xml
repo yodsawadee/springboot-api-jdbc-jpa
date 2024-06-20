@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <include resource="org/springframework/boot/logging/logback/base.xml"/>
+    <springProperty scope="context" name="springAppName" source="spring.application.name" />
+    <springProperty scope="rootlogpath" name="rootlogpath" source="rootlogpath" />
+
+    <property name="defaultpattern" value="%d{yyyy-MM-dd HH:mm:ss}|${springAppName}|%thread|%-5p|%C{0}.%M,%L|%m%n" />
+
+    <springProfile name="development">
+        <appender name="Console" class="ch.qos.logback.core.ConsoleAppender">
+            <layout class="ch.qos.logback.classic.PatternLayout">
+                <Pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</Pattern>
+<!--                <Pattern>${defaultpattern}</Pattern>-->
+            </layout>
+        </appender>
+        <root level="info">
+            <appender-ref ref="Console" />
+        </root>
+    </springProfile>
+
+    <springProfile name="production">
+        <property name="logpath" value="/Users/yodsawadee/Documents/CODING/java-tutorial/springboot-api-jdbc-jpa/logs" />
+        <appender name="RollingFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
+            <file>${logpath}/applog.log</file>
+            <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+                <Pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</Pattern>
+            </encoder>
+            <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+                <fileNamePattern>${logpath}/applog-%d{yyyy-MM-dd}.log</fileNamePattern>
+            </rollingPolicy>
+        </appender>
+        <root level="info">
+            <appender-ref ref="RollingFile" />
+        </root>
+    </springProfile>
+    
+</configuration>
