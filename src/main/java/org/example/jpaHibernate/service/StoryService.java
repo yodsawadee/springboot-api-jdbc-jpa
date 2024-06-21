@@ -55,30 +55,33 @@ public class StoryService {
 //        return storyList;
 //    }
 //
-//    private List<Sort.Order> createSortOrder(List<String> sortList, String sortDirection) {
-//        List<Sort.Order> sorts = new ArrayList<>();
-//        Sort.Direction direction;
-//        for (String sort : sortList) {
-//            if (sortDirection != null) {
-//                direction = Sort.Direction.fromString(sortDirection);
-//            } else {
-//                direction = Sort.Direction.DESC;
-//            }
-//            sorts.add(new Sort.Order(direction, sort));
-//        }
-//        return sorts;
-//    }
+    private List<Sort.Order> createSortOrder(List<String> sortList, String sortDirection) {
+        List<Sort.Order> sorts = new ArrayList<>();
+        Sort.Direction direction;
+        for (String sort : sortList) {
+            if (sortDirection != null) {
+                direction = Sort.Direction.fromString(sortDirection);
+            } else {
+                direction = Sort.Direction.DESC;
+            }
+            sorts.add(new Sort.Order(direction, sort));
+        }
+        return sorts;
+    }
 
 
-    private PageRequest genPageRequest(int page, int limit, String sort, Sort.Direction direction) {
-        return PageRequest.of(page - 1, limit, Sort.by(direction, sort));
+//    private PageRequest genPageRequest(int page, int limit, String sort, Sort.Direction direction) {
+    private PageRequest genPageRequest(int page, int limit, List<String> sortList, Sort.Direction direction) {
+//        return PageRequest.of(page - 1, limit, Sort.by(direction, sort));
+        String directionString = String.valueOf(direction);
+        return PageRequest.of(page, limit, Sort.by(createSortOrder(sortList, directionString)));
     }
 
     public Page<Story> findAllStories(StoriesSearchCriteria searchCriteria) {
         PageRequest pageRequest = genPageRequest(
                 searchCriteria.getPage(),
                 searchCriteria.getSize(),
-                searchCriteria.getSort(),
+                searchCriteria.getSortList(),
                 searchCriteria.getDirection()
         );
         return storyRepository.findAll(getStorySpecification(searchCriteria), pageRequest);

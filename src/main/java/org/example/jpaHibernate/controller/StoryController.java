@@ -16,6 +16,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
+@CrossOrigin("*")
 @Controller
 @RequestMapping("/jpa/story")
 public class StoryController {
@@ -146,9 +147,9 @@ public class StoryController {
                                                                    @RequestParam(required = false, value = "title") String title,
                                                                    @RequestParam(required = false, value = "body") String body,
                                                                    @RequestParam(required = false, value = "author") String author,
-                                                                   @RequestParam(required = false, defaultValue = "1", value = "page") Integer page,
+                                                                   @RequestParam(required = false, defaultValue = "0", value = "page") Integer page,
                                                                    @RequestParam(required = false, defaultValue = "10", value = "size") Integer size,
-                                                                   @RequestParam(required = false, defaultValue = "id", value = "sort") String sort,
+                                                                   @RequestParam(required = false, defaultValue = "id", value = "sortList") List<String> sortList,
                                                                    @RequestParam(required = false, defaultValue = "ASC", value = "order") Sort.Direction direction) throws Exception{
 
         try {
@@ -159,7 +160,7 @@ public class StoryController {
                     .author(author)
                     .page(page)
                     .size(size)
-                    .sort(sort)
+                    .sortList(sortList)
                     .direction(direction)
                     .build();
             Page<Story> storyListPage = storyService.findAllStories(searchCriteria);

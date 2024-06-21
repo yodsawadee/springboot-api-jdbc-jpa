@@ -16,7 +16,7 @@ public class StoriesSearchCriteria {
     public String author;
     public Integer page;
     public Integer size;
-    public String sort;
+//    public String sort;
+    public List<String> sortList;
     public Sort.Direction direction;
-//    public List<String> sortList;
 }
