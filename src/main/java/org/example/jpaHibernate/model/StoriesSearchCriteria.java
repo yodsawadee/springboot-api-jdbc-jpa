@@ -13,6 +13,7 @@ public class StoriesSearchCriteria {
     public Long id;
     public String title;
     public String body;
+    public String author;
     public Integer page;
     public Integer size;
     public String sort;

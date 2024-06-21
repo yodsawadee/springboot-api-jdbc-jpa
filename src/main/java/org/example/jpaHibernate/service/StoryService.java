@@ -84,58 +84,62 @@ public class StoryService {
         return storyRepository.findAll(getStorySpecification(searchCriteria), pageRequest);
     }
 
-//    private Specification<Story> getStorySpecification(StoriesSearchCriteria filter) {
-//        return (root, query, cb) -> {
-//            List<Predicate> predicates = new ArrayList<>();
-//            if (filter.getId() != null) {
-//                predicates.add(cb.equal(root.get("id"), filter.getId()));
-//            }
-//            if (!StringUtils.isEmpty(filter.getTitle())) {
-//                predicates.add(cb.like(cb.lower(root.get("title")),
-//                        "%" + filter.getTitle().toLowerCase() + "%"));
-//            }
-//            if (!StringUtils.isEmpty(filter.getBody())) {
-//                predicates.add(cb.like(cb.lower(root.get("body")),
-//                        "%" + filter.getBody().toLowerCase() + "%"));
-//            }
-//            return cb.and(predicates.toArray(new Predicate[predicates.size()]));
-//        };
-//    }
-
     private Specification<Story> getStorySpecification(StoriesSearchCriteria filter) {
         return (root, query, cb) -> {
-            List<Predicate> andPredicates = new ArrayList<>();
-            List<Predicate> orPredicates = new ArrayList<>();
-
-            // can search specific Id or one of (title and body)
-
-            // Add predicate for filtering by id (A)
+            List<Predicate> predicates = new ArrayList<>();
             if (filter.getId() != null) {
-                orPredicates.add(cb.equal(root.get("id"), filter.getId()));
+                predicates.add(cb.equal(root.get("id"), filter.getId()));
             }
-
-            // Add predicate for filtering by title (B, case-insensitive)
             if (!StringUtils.isEmpty(filter.getTitle())) {
-                andPredicates.add(cb.like(cb.lower(root.get("title")),
+                predicates.add(cb.like(cb.lower(root.get("title")),
                         "%" + filter.getTitle().toLowerCase() + "%"));
             }
-
-            // Add predicate for filtering by body (C, case-insensitive)
             if (!StringUtils.isEmpty(filter.getBody())) {
-                andPredicates.add(cb.like(cb.lower(root.get("body")),
+                predicates.add(cb.like(cb.lower(root.get("body")),
                         "%" + filter.getBody().toLowerCase() + "%"));
             }
-
-            // Combine B and C using AND
-            Predicate andCombined = cb.and(andPredicates.toArray(new Predicate[andPredicates.size()]));
-
-            // Combine A and (B AND C) using OR
-            if (!andPredicates.isEmpty()) {
-                orPredicates.add(andCombined);
+            if (!StringUtils.isEmpty(filter.getAuthor())) {
+                predicates.add(cb.like(cb.lower(root.get("author")),
+                        "%" + filter.getAuthor().toLowerCase() + "%"));
             }
-
-            // Combine all OR predicates
-            return cb.or(orPredicates.toArray(new Predicate[orPredicates.size()]));
+            return cb.and(predicates.toArray(new Predicate[predicates.size()]));
         };
     }
+
+//    private Specification<Story> getStorySpecification(StoriesSearchCriteria filter) {
+//        return (root, query, cb) -> {
+//            List<Predicate> andPredicates = new ArrayList<>();
+//            List<Predicate> orPredicates = new ArrayList<>();
+//
+//            // can search specific Id or one of (title and body)
+//
+//            // Add predicate for filtering by id (A)
+//            if (filter.getId() != null) {
+//                orPredicates.add(cb.equal(root.get("id"), filter.getId()));
+//            }
+//
+//            // Add predicate for filtering by title (B, case-insensitive)
+//            if (!StringUtils.isEmpty(filter.getTitle())) {
+//                andPredicates.add(cb.like(cb.lower(root.get("title")),
+//                        "%" + filter.getTitle().toLowerCase() + "%"));
+//            }
+//
+//            // Add predicate for filtering by body (C, case-insensitive)
+//            if (!StringUtils.isEmpty(filter.getBody())) {
+//                andPredicates.add(cb.like(cb.lower(root.get("body")),
+//                        "%" + filter.getBody().toLowerCase() + "%"));
+//            }
+//
+//            // Combine B and C using AND
+//            Predicate andCombined = cb.and(andPredicates.toArray(new Predicate[andPredicates.size()]));
+//
+//            // Combine A and (B AND C) using OR
+//            if (!andPredicates.isEmpty()) {
+//                orPredicates.add(andCombined);
+//            }
+//
+//            // Combine all OR predicates
+//            return cb.or(orPredicates.toArray(new Predicate[orPredicates.size()]));
+//        };
+//    }
 }

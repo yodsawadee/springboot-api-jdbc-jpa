@@ -145,6 +145,7 @@ public class StoryController {
                                                                    @RequestParam(required = false, value = "id") Long searchID,
                                                                    @RequestParam(required = false, value = "title") String title,
                                                                    @RequestParam(required = false, value = "body") String body,
+                                                                   @RequestParam(required = false, value = "author") String author,
                                                                    @RequestParam(required = false, defaultValue = "1", value = "page") Integer page,
                                                                    @RequestParam(required = false, defaultValue = "10", value = "size") Integer size,
                                                                    @RequestParam(required = false, defaultValue = "id", value = "sort") String sort,
@@ -155,6 +156,7 @@ public class StoryController {
                     .id(searchID)
                     .title(title)
                     .body(body)
+                    .author(author)
                     .page(page)
                     .size(size)
                     .sort(sort)

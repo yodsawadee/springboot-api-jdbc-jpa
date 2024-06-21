@@ -23,13 +23,21 @@ public class Story {
     @Column(name = "BODY")
     private String body;
 
+    @Column(name = "AUTHOR")
+    private String author;
+
+    @Column(name = "IMG")
+    private String img;
+
     @Column(name = "CREATED_AT", nullable = false, updatable = false, insertable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private Timestamp createdAt;
 
-    public Story(Long id, String title, String body, Timestamp createdAt) {
+    public Story(Long id, String title, String body, String author, String img, Timestamp createdAt) {
         this.id = id;
         this.title = title;
         this.body = body;
+        this.author = author;
+        this.img = img;
         this.createdAt = createdAt;
     }
 
