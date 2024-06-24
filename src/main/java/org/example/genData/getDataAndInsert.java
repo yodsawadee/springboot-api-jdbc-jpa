@@ -2,6 +2,7 @@ package org.example.genData;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.net.URI;
@@ -12,7 +13,26 @@ import java.util.List;
 
 public class getDataAndInsert {
 
+    private static final CallAPI callAPI = new CallAPI(new RestTemplate());
+
     public static void main(String[] args) {
+        ApiDataModel apiData = callAPI.getData();
+        if (apiData != null) {
+            System.out.println("have data id="+apiData.getId());
+        }
+        List<ApiDataModel> apiDataList = callAPI.getDataList();
+        if (!apiDataList.isEmpty()) {
+            System.out.println("have data list size="+apiDataList.size());
+        }
+
+        List<ApiDataImgModel> apiImgDataList = callAPI.getImgDataList("", "5");
+        if (!apiImgDataList.isEmpty()) {
+            System.out.println("have img data list size="+apiImgDataList.size());
+        }
+        //        getDataFromAPI();
+    }
+
+    private static void getDataFromAPI() {
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create("https://jsonplaceholder.typicode.com/posts"))
