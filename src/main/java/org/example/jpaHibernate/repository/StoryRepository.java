@@ -16,6 +16,15 @@ public interface StoryRepository extends JpaRepository<Story,Long>, JpaSpecifica
     @Query("select s from Story s where s.title like %:text%")
     List<Story> searchStoryByTitle(String text);
 
+    @Query("select s from Story s where s.author like %:author%")
+    List<Story> searchStoryByAuthor(String author);
+
+    @Query("select s from Story s order by s.id asc")
+    List<Story> findAllOrderByIdAsc();
+
+    @Query("select s from Story s order by s.updatedAt desc")
+    List<Story> findAllOrderByUpdatedAtDesc();
+
     @Query("select s from Story s where s.title like %:title% or s.body like %:body%")
     Page<Story> findByTitleLikeAndBodyLike(String title, String body, Pageable pageable);
 }

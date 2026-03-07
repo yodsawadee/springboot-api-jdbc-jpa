@@ -2,12 +2,12 @@ package org.example.jdbc.model;
 
 import lombok.Data;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.sql.Timestamp;
 
 @Data
 @Entity
-@Table(name = "STORIES")
+@Table(name = "story")
 public class StoryEntity {
 
     @Id
@@ -15,15 +15,13 @@ public class StoryEntity {
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     private Long id;
 
-
-    @Column(name = "TITLE")
+    @Column(name = "title")
     private String title;
 
-
-    @Column(name = "BODY")
+    @Column(name = "body")
     private String body;
 
-    @Column(name = "CREATED_AT", nullable = false, updatable = false, insertable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    @Column(name = "created_at", nullable = false, updatable = false, insertable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private Timestamp createdAt;
 
     public StoryEntity(Long id, String title, String body, Timestamp createdAt) {

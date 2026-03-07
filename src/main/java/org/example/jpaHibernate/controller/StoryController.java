@@ -1,20 +1,28 @@
 package org.example.jpaHibernate.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.SneakyThrows;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.example.jpaHibernate.entity.Story;
 import org.example.jpaHibernate.model.StoriesSearchCriteria;
-import org.example.jpaHibernate.model.StorySearchReq;
+import org.example.jpaHibernate.model.StoryListRequest;
+import org.example.jpaHibernate.model.StoryRequest;
+import org.example.jpaHibernate.model.StoryResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.example.jpaHibernate.service.StoryService;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @CrossOrigin("*")
 @Controller
@@ -29,119 +37,112 @@ public class StoryController {
         this.storyService = storyService;
     }
 
+    @Operation(
+            summary = "Get all stories",
+            description = "Retrieves a list of all stories from the PostgreSQL database"
+    )
+    @Transactional(readOnly = true)
+    @GetMapping
+    public ResponseEntity<List<StoryResponse>> getAllStories(HttpServletRequest request, HttpServletResponse response) {
+        return ResponseEntity.ok(storyService.getAllStories());
+    }
 
-    @ResponseBody
-    @RequestMapping(value = "/get/{id}",method = RequestMethod.GET)
-    public ResponseEntity<Story> findStoryById(@PathVariable("id")Long id, HttpServletRequest request, HttpServletResponse response) throws Exception{
-
-        try {
-            logger.debug("findStoryById id: {}",id);
-            Story story = storyService.findById(id);
-
-            if(story != null) {
-                return ResponseEntity.ok(story);
-            }
-
+    @Operation(description = "Get story by id")
+    @Transactional(readOnly = true)
+    @SneakyThrows
+    @GetMapping("/{id}")
+    public ResponseEntity<StoryResponse> findStoryById(@PathVariable("id") Long id, HttpServletRequest request, HttpServletResponse response) {
+        logger.debug("findStoryById id: {}",id);
+        StoryResponse storyResponse = storyService.getById(id);
+        if (storyResponse == null) {
             throw new Exception("Data not found");
-
-        } catch (Exception e){
-
-            e.printStackTrace();
-            throw e;
         }
-
+        return ResponseEntity.ok(storyResponse);
     }
 
-    @ResponseBody
-    @RequestMapping(value = "/getAll",method = RequestMethod.GET)
-    public ResponseEntity<List<Story>> getAllStories(HttpServletRequest request, HttpServletResponse response) throws Exception{
+    @Operation(description = "Create story list")
+    @Transactional
+    @SneakyThrows
+    @PostMapping
+    public ResponseEntity<String> createStoryList(HttpServletRequest request, HttpServletResponse response, @RequestBody StoryListRequest storyListRequest) {
+        List<Story> createdStoryList = storyService.createStory(storyListRequest);
 
-        try {
-            List<Story> storyList = storyService.getAllStories();
+        if (ObjectUtils.isEmpty(createdStoryList)) {
+            throw new Exception("Failed creating story list");
+        }
 
-            if(storyList != null) {
-                return ResponseEntity.ok(storyList);
+        String ids = createdStoryList.stream()
+                .map(story -> String.valueOf(story.getId()))
+                .collect(Collectors.joining(", "));
+        return ResponseEntity.ok("Created new story list with ids: " + ids);
+    }
+
+    @Operation(description = "Get story by id/title/author")
+    @Transactional(readOnly = true)
+    @SneakyThrows
+    @GetMapping("/search")
+    public ResponseEntity<List<StoryResponse>> searchStory(HttpServletRequest request, HttpServletResponse response,
+                                                   @RequestParam(required = false, value = "id") Long searchID,
+                                                   @RequestParam(required = false, value = "title") String title,
+                                                   @RequestParam(required = false, value = "author") String author
+    ) {
+
+        List<Story> storyList = null;
+
+        if (searchID != null) {
+            Story story = storyService.findById(searchID);
+            if (story != null) {
+                storyList = List.of(story);
             }
+        } else if (StringUtils.hasText(title)) {
+            storyList = storyService.searchStoryByTitle(title);
+        } else if (StringUtils.hasText(author)) {
+            storyList = storyService.searchStoryByAuthor(author);
+        }
 
+        if (storyList != null) {
+            List<StoryResponse> storyResponseList = storyList.stream()
+                    .map(StoryResponse::new)
+                    .toList();
+            return ResponseEntity.ok(storyResponseList);
+        }
+
+        throw new Exception("Data not found");
+    }
+
+    @Operation(
+            summary = "Update story by id",
+            description = "Updates an existing story record in the database"
+    )
+    @Transactional
+    @SneakyThrows
+    @PutMapping("/{id}")
+    public ResponseEntity<StoryResponse> updateStoryById(HttpServletRequest request, HttpServletResponse response,
+                                                         @PathVariable("id") Long id,
+                                                         @RequestBody StoryRequest storyRequest
+    ) {
+        logger.debug("updateStoryById id: {}",id);
+        StoryResponse storyResponse = storyService.updateStoryById(id, storyRequest);
+        if (storyResponse == null) {
             throw new Exception("Data not found");
-
-        } catch (Exception e){
-
-            e.printStackTrace();
-            throw e;
         }
-
+        return ResponseEntity.ok(storyResponse);
     }
 
-    @ResponseBody
-    @RequestMapping(value = "/create",method = RequestMethod.POST)
-    public ResponseEntity<String> createStory(HttpServletRequest request, HttpServletResponse response, @RequestBody Story story) throws Exception{
-
-        try {
-            boolean created = storyService.createStory(story);
-
-            if(created) {
-                return ResponseEntity.ok("Created new story");
-            }
-
-            throw new Exception("Failed creating story");
-
-        } catch (Exception e){
-
-            e.printStackTrace();
-            throw e;
-        }
-
+    @Operation(
+            summary = "Update story by id (partial update)",
+            description = "Updates an existing story record in the database"
+    )
+    @Transactional
+    @SneakyThrows
+    @PatchMapping("/{id}")
+    public ResponseEntity<StoryResponse> patchStory(@PathVariable("id") Long id, @RequestBody StoryRequest storyRequest) {
+        return ResponseEntity.ok(storyService.updateStoryById(id, storyRequest, true));
     }
 
-    @ResponseBody
-    @RequestMapping(value = "/searchByTitle",method = RequestMethod.POST)
-    public ResponseEntity<List<Story>> searchStoryByTitle(HttpServletRequest request, HttpServletResponse response, @RequestBody StorySearchReq storySearchReq) throws Exception{
-
-        try {
-            List<Story> storyList = storyService.searchStoryByTitle(storySearchReq.getText());
-
-            if(storyList != null) {
-                return ResponseEntity.ok(storyList);
-            }
-
-            throw new Exception("Data not found");
-
-        } catch (Exception e){
-
-            e.printStackTrace();
-            throw e;
-        }
-
-    }
-
-//    @ResponseBody
-//    @RequestMapping(value = "/get",method = RequestMethod.GET)
-//    public ResponseEntity<Page<Story>> fetchStoryWithPageInterface(HttpServletRequest request, HttpServletResponse response,
-//                                                                   @RequestParam(defaultValue = "") String title,
-//                                                                   @RequestParam(defaultValue = "") String body,
-//                                                                   @RequestParam(defaultValue = "0") int page,
-//                                                                   @RequestParam(defaultValue = "5") int size,
-//                                                                   @RequestParam(defaultValue = "") List<String> sortList,
-//                                                                   @RequestParam(defaultValue = "DESC") Sort.Direction sortOrder) throws Exception{
-//
-//        try {
-//            Page<Story> storyList = storyService.fetchStoryWithPageInterface(title, body, page, size, sortList, sortOrder.toString());
-//
-//            if(storyList != null) {
-//                return ResponseEntity.ok(storyList);
-//            }
-//            throw new Exception("Data not found");
-//
-//        } catch (Exception e){
-//            e.printStackTrace();
-//            throw e;
-//        }
-//
-//    }
-
-    @ResponseBody
-    @RequestMapping(value = "/get",method = RequestMethod.GET)
+    @Operation(description = "Get story list with pagination and sorting")
+    @Transactional(readOnly = true)
+    @GetMapping("/get")
     public ResponseEntity<Page<Story>> fetchStoryWithPageInterface(HttpServletRequest request, HttpServletResponse response,
                                                                    @RequestParam(required = false, value = "id") Long searchID,
                                                                    @RequestParam(required = false, value = "title") String title,

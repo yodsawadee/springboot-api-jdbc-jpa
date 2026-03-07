@@ -1,5 +1,7 @@
 package org.example.jdbc.repository;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.example.jdbc.model.Story;
 import org.example.jdbc.model.StoryEntity;
 import org.example.jdbc.rowmapper.StoryRowMapper;
@@ -7,8 +9,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import java.util.List;
 
 

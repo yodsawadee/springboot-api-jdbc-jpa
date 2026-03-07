@@ -1,44 +1,63 @@
 package org.example.jpaHibernate.entity;
 
-import javax.persistence.*;
-import lombok.Data;
+import jakarta.persistence.*;
 
-import java.sql.Timestamp;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import org.example.jpaHibernate.model.StoryRequest;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 @Data
+@AllArgsConstructor
 @Entity
-@Table(name = "STORIES")
+@Table(name = "story")
 public class Story {
 
     @Id
-    @Column(name = "ID")
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     private Long id;
 
-
-    @Column(name = "TITLE")
+    @Column
     private String title;
 
-
-    @Column(name = "BODY")
+    @Column
     private String body;
 
-    @Column(name = "AUTHOR")
+    @Column
     private String author;
 
-    @Column(name = "IMG")
+    @Column
     private String img;
 
-    @Column(name = "CREATED_AT", nullable = false, updatable = false, insertable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-    private Timestamp createdAt;
+    @Column(name = "published_date")
+    private LocalDateTime publishedDate;
 
-    public Story(Long id, String title, String body, String author, String img, Timestamp createdAt) {
-        this.id = id;
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private OffsetDateTime createdAt;
+
+    @UpdateTimestamp
+    @Column(name = "updated_at", nullable = false)
+    private OffsetDateTime updatedAt;
+
+    public Story(String title, String body, String author, String img, LocalDateTime publishedDate) {
         this.title = title;
         this.body = body;
         this.author = author;
         this.img = img;
-        this.createdAt = createdAt;
+        this.publishedDate = publishedDate;
+    }
+
+    public Story(StoryRequest storyRequest) {
+        this.title = storyRequest.getTitle();
+        this.body = storyRequest.getBody();
+        this.author = storyRequest.getAuthor();
+        this.img = storyRequest.getImg();
+        this.publishedDate = storyRequest.getPublishedDate();
     }
 
     public Story() {

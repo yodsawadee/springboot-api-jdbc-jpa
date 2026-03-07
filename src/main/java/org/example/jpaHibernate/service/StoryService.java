@@ -1,48 +1,107 @@
 package org.example.jpaHibernate.service;
 
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.persistence.criteria.Predicate;
 import org.example.jpaHibernate.entity.Story;
 import org.example.jpaHibernate.model.StoriesSearchCriteria;
+import org.example.jpaHibernate.model.StoryListRequest;
+import org.example.jpaHibernate.model.StoryRequest;
+import org.example.jpaHibernate.model.StoryResponse;
 import org.example.jpaHibernate.repository.StoryRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import javax.persistence.criteria.Predicate;
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class StoryService {
 
-    private final StoryRepository storyRepository;
-
-    public StoryService(StoryRepository storyRepository) {
-        this.storyRepository = storyRepository;
-    }
+    @Autowired
+    private StoryRepository storyRepository;
 
     public Story findById(Long storyId) {
         return this.storyRepository.findById(storyId).orElse(null);
     }
 
-    public List<Story> getAllStories() {
-        return storyRepository.findAll();
+    public StoryResponse getById(Long storyId) {
+        return this.storyRepository.findById(storyId)
+                .map(StoryResponse::new)
+                .orElse(null);
     }
 
-    public boolean createStory(Story story) {
-        Story newStory = storyRepository.saveAndFlush(story);
-        if(newStory != null) {
-            return true;
-        }
-        return false;
+    public List<StoryResponse> getAllStories() {
+        List<Story> storyList = storyRepository.findAllOrderByUpdatedAtDesc();
+        return storyList.stream()
+                .map(StoryResponse::new)
+                .toList();
+    }
+
+    public Story createStory(StoryRequest storyRequest) {
+        Story story = new Story(storyRequest);
+        return storyRepository.saveAndFlush(story);
+    }
+
+    public List<Story> createStory(StoryListRequest storyListRequest) {
+        List<Story> storyList = new ArrayList<>();
+        storyListRequest.getStoryList().forEach(storyRequest -> {
+            Story story = new Story(storyRequest);
+            storyList.add(story);
+        });
+        return storyRepository.saveAll(storyList);
     }
 
     public List<Story> searchStoryByTitle(String text) {
-        List<Story> storyList = storyRepository.searchStoryByTitle(text);
-        return storyList;
+        return storyRepository.searchStoryByTitle(text);
+    }
+
+    public List<Story> searchStoryByAuthor(String text) {
+        return storyRepository.searchStoryByAuthor(text);
+    }
+
+    public StoryResponse updateStoryById(Long storyId, StoryRequest storyRequest) {
+        Story story = findById(storyId);
+        if (story != null) {
+            story.setTitle(storyRequest.getTitle());
+            story.setBody(storyRequest.getBody());
+            story.setAuthor(storyRequest.getAuthor());
+            story.setImg(storyRequest.getImg());
+            story.setPublishedDate(storyRequest.getPublishedDate());
+            Story updatedStory = storyRepository.saveAndFlush(story);
+            return new StoryResponse(updatedStory);
+        }
+        return null;
+    }
+
+    public StoryResponse updateStoryById(Long id, StoryRequest request, boolean isPartialUpdate) {
+        // 1. Find the existing story or throw error
+        Story existingStory = this.storyRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Story not found with id: " + id));
+
+        // 2. Update only the fields that were provided in the JSON
+        if (request.getTitle() != null) {
+            existingStory.setTitle(request.getTitle());
+        }
+        if (request.getBody() != null) {
+            existingStory.setBody(request.getBody());
+        }
+        if (request.getAuthor() != null) {
+            existingStory.setAuthor(request.getAuthor());
+        }
+        if (request.getImg() != null) {
+            existingStory.setImg(request.getImg());
+        }
+        if (request.getPublishedDate() != null) {
+            existingStory.setPublishedDate(request.getPublishedDate());
+        }
+
+        // 3. Save the modified entity (Hibernate handles the UPDATE SQL)
+        Story updated = storyRepository.save(existingStory);
+        return new StoryResponse(updated);
     }
 
 
