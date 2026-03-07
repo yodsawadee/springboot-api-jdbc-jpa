@@ -4,12 +4,14 @@ import jakarta.persistence.*;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import org.example.jpaHibernate.model.StoryRequest;
+import org.example.jpaHibernate.model.request.StoryRequest;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -43,6 +45,9 @@ public class Story {
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
     private OffsetDateTime updatedAt;
+
+    @OneToMany(mappedBy = "story", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Comment> comments = new ArrayList<>();
 
     public Story(String title, String body, String author, String img, LocalDateTime publishedDate) {
         this.title = title;

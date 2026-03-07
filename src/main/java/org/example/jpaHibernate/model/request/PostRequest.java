@@ -1,4 +1,4 @@
-package org.example.jpaHibernate.model;
+package org.example.jpaHibernate.model.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class StorySearchReq {
-    private String text;
+public class PostRequest {
+    private String title;
+    private String body;
 }

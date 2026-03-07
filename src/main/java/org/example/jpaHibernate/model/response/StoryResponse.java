@@ -1,4 +1,4 @@
-package org.example.jpaHibernate.model;
+package org.example.jpaHibernate.model.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
@@ -8,6 +8,7 @@ import org.example.jpaHibernate.entity.Story;
 
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -26,6 +27,8 @@ public class StoryResponse {
 
     private OffsetDateTime updatedAt;
 
+    private List<CommentResponse> comments;
+
     public StoryResponse(Story story) {
         this.id = story.getId();
         this.title = story.getTitle();
@@ -35,5 +38,9 @@ public class StoryResponse {
         this.publishedDate = story.getPublishedDate();
         this.createdAt = story.getCreatedAt();
         this.updatedAt = story.getUpdatedAt();
+
+        this.comments = story.getComments().stream()
+                .map(CommentResponse::new)
+                .toList();
     }
 }

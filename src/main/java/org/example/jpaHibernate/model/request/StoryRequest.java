@@ -1,4 +1,4 @@
-package org.example.jpaHibernate.model;
+package org.example.jpaHibernate.model.request;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;

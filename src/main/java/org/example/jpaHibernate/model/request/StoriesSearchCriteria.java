@@ -1,4 +1,4 @@
-package org.example.jpaHibernate.model;
+package org.example.jpaHibernate.model.request;
 
 import lombok.Builder;
 import lombok.Getter;
